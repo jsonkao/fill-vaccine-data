@@ -1,6 +1,10 @@
-## Data sources
+## Plan
 
-SafeGraph geometry
-
-[Covid-19 Vaccination Provider Locations in the United States](https://covid-19-giscorps.hub.arcgis.com/datasets/c50a1a352e944a66aed98e61952051ef_0?geometry=-123.030%2C45.465%2C-122.376%2C45.549)
-
+1. Focus scope on Richmond, Virginia.
+2. Scrape VaccineFinder
+3. Match sites with SG placekey id's using Geometry dataset
+4. Use Weekly Patterns dataset to find home cbg's of those visiting vaccine sites and find their demographics
+5. Validate results at the lowest level possible
+    * Compare proportion SG visits with proportion actual visits (either by institution x race, neighborhood x race, or just race)
+    * Maybe run methodology on other cities where ground truth is more available
+6. Ask a stats god whats up
