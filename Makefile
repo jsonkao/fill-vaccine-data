@@ -4,20 +4,25 @@ tk: $(DATE)/patterns.csv
 
 # Deriving GeoJSON geometry from WKT SafeGraph geometry
 
-geometry.topojson: VA04-09-2021-13-50-GEOMETRY-2021_03-2021-04-09/geometry.csv
-	node wkt.js $< | ndjson-reduce | ndjson-map '{type: "FeatureCollection", features: d}' | mapshaper - -clean -o $@
+# SafeGraph geometry filtered to those above providers
+geometry.geojson: VA04-09-2021-13-50-GEOMETRY-2021_03-2021-04-09/geometry.csv wkt.js filter-geom.py
+	node wkt.js $< \
+	| python3 filter-geom.py providers.geojson \
+	| ndjson-reduce \
+	| ndjson-map '{type: "FeatureCollection", features: d}' \
+	| mapshaper - name=geometry -clean -o $@
 
 # Patterns download and filter
 
-%/patterns.csv:
-	cat $(wildcard $(dir $@)*.csv) | python3 cut.py
+patterns.csv: geometry.geojson Makefile
+	python3 cut.py geometry.geojson $(wildcard $(basename $@)/*/*/*/*.csv) > $@
 
 decompress:
-	find $(DATE) -name "*.gz" -print0 | parallel -q0 gunzip -k
+	find patterns -name "*.gz" -print0 | parallel -q0 gunzip -k
 
 # Getting providers from the GISCorps link
 
-providers.geojson: Makefile
+providers.geojson:
 	mapshaper providers/*.shp -filter 'municipali.toLowerCase() == "richmond"' -drop fields=* -o $@
 
 providers:
