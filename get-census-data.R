@@ -5,7 +5,6 @@ census_api_key('b0c03e2d243c837b10d7bb336a998935c35828af')
 
 get_acs(
   state = "Virginia",
-  county = c("Richmond city"),
   geography = "block group",
   variables = c(
     income = "B19013_001",
@@ -20,4 +19,4 @@ get_acs(
   pivot_wider(names_from = variable, values_from = estimate) %>% 
   select(-NAME) %>% 
   toJSON() %>% 
-  write('~/Development/census.json')
+  write("~/Development/fill-vaccine-data/census_data/census.json")
