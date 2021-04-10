@@ -1,5 +1,5 @@
-main: census_data/census.json patterns.csv
-	python3 demographics.py
+output.txt: census_data/census.json patterns.csv
+	python3 demographics.py > $@
 
 #
 # Deriving GeoJSON geometry from WKT SafeGraph geometry
