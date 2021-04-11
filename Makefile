@@ -8,8 +8,8 @@ output.txt: census_data/census.json patterns.csv
 #
 
 # Filter SafeGraph patterns to those with placekeys
-patterns.csv: geometry.geojson
-	python3 filter-placekeys.py geometry.geojson $(wildcard $(basename $@)/*/*/*/patterns.csv) > $@
+patterns.csv: geometry.geojson filter-placekeys.py
+	python3 filter-placekeys.py $< $(wildcard $(basename $@)/*/*/*/patterns.csv) > $@
 
 
 # Filter files to locality. Filename = patterns/MM/DD/HH/patterns.csv
@@ -50,7 +50,7 @@ census-data/census.json:
 # Getting providers
 #
 
-providers.geojson: richmond.json filter-boundary.py Makefile
+providers.geojson: richmond.json filter-boundary.py
 	jq '.providers[]' -c $< \
 	| ndjson-map '{type: "Feature", geometry: {type: "Point", coordinates: [d.long,d.lat]}, properties: d}' \
 	| python3 filter-boundary.py \

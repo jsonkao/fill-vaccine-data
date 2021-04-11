@@ -15,7 +15,14 @@ opening_dates = {
 
     # https://www.nbc12.com/2021/04/04/nearly-at-risk-seniors-receive-covid-vaccine-during-richmond-clinic/
     # NOTE: Was this just one event?
-    'JenCare Senior Medical Center': None
+    'JenCare Senior Medical Center': None,
+    'Kroger': None,
+    'MinuteClinic': None,
+    'Publix Super Markets': None,
+    'Rite Aid': None,
+    'Walgreens': None,
+    'Walmart Pharmacy 10 2821': None,
+    'Westwood Pharmacy': None,
 }
 
 with open("census_data/census.json") as f:
