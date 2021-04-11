@@ -36,7 +36,14 @@ census_data/census.json:
 # Getting providers from the GISCorps link
 #
 
-providers.geojson:
+providers.geojson: richmond.json
+	jq '.providers[]' -c richmond.json \
+	| ndjson-map '{type: "Point", coordinates: [d.long,d.lat]}' \
+	| ndjson-reduce \
+	| ndjson-map '{type: "GeometryCollection", geometries: d}' \
+	> $@
+
+providers-old.geojson:
 	mapshaper providers/*.shp -filter 'municipali.toLowerCase() == "richmond"' -drop fields=* -o $@
 
 providers:
@@ -48,8 +55,9 @@ providers:
 # Getting providers by scraping VaccineFinder (doesnt really work)
 #
 
-richmond.json: richmond-points.geojson scrape.py
-	python3 scrape.py $< > $@
+# Currently this file I just copied from the networks tab using zip code 23220 because it returned 50, which is more results than 44
+# richmond.json: richmond-points.geojson scrape.py
+# 	python3 scrape.py $< > $@
 
 richmond-points.geojson: richmond.geojson
 	mapshaper $< -point-grid interval=.019 -o $@
