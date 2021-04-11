@@ -13,6 +13,10 @@ patterns.csv: geometry.geojson
 decompress:
 	find patterns -name "*.gz" -print0 | parallel -q0 gunzip -k
 
+# Download SafeGraph files
+download:
+	aws s3 sync s3://sg-c19-response/weekly-patterns-delivery-2020-12/weekly/patterns/2021 patterns --profile safegraphws --endpoint https://s3.wasabisys.com
+
 #
 # Deriving GeoJSON geometry from WKT SafeGraph geometry
 #
