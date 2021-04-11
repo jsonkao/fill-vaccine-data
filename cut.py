@@ -1,4 +1,5 @@
 from multiprocessing import Pool
+from tqdm import tqdm
 import sys
 import json
 
@@ -25,7 +26,7 @@ def main():
 
     # Process the files
     pool = Pool()
-    for output in pool.imap(filter_file, filenames):
+    for output in tqdm(pool.imap(filter_file, filenames), total=len(filenames)):
         sys.stdout.write(output)
     pool.close()
     pool.join()
