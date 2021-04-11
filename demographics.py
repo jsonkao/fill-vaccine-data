@@ -4,6 +4,20 @@ from collections import defaultdict
 import json
 import csv
 
+opening_dates = {
+    # https://www.wric.com/health/coronavirus/cvs-expanding-virginia-vaccination-locations-from-28-to-36/
+    # https://www.wric.com/health/coronavirus/cvs-updates-plans-to-administer-vaccines-in-virginia/
+    'CVS': '2021-02-12',
+
+    # https://wjla.com/news/coronavirus-vaccine/dates-availability-in-flux-as-cvs-walgreens-offer-covid-19-vaccinations-in-va-md
+    # NOTE: Confirm w/ call
+    'Walgreens': '2021-02-12',
+
+    # https://www.nbc12.com/2021/04/04/nearly-at-risk-seniors-receive-covid-vaccine-during-richmond-clinic/
+    # NOTE: Was this just one event?
+    'JenCare Senior Medical Center': None
+}
+
 with open("census_data/census.json") as f:
     census = {r["GEOID"]: r for r in json.load(f)}
 

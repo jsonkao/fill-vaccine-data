@@ -9,7 +9,7 @@ with open(sys.argv[1]) as f, open(sys.argv[2]) as f2:
             "point": Point(*feature["geometry"]["coordinates"]),
             "polygons": [],
             "features": [],
-            "properties": feature["properties"],
+            "original_feature": feature,
         }
         for feature in json.load(f)["features"] + json.load(f2)['features']
     ]
@@ -33,13 +33,11 @@ PRIORITY_NAMES = [
     "Rite Aid",
 ]
 
-num_missing = 0
-props_of_missing = []
+missing_providers = []
 
 for p in providers:
     if len(p["polygons"]) == 0:
-        num_missing += 1
-        props_of_missing.append(p["properties"])
+        missing_providers.append(p["original_feature"])
     elif len(p["polygons"]) == 1:
         print(json.dumps(p["features"][0]))
     else:
@@ -54,11 +52,13 @@ for p in providers:
                 f"[filter-geom] No priority names: {[f['properties']['location_name'] for f in p['features']]}",
                 file=sys.stderr,
             )
-            num_missing += 1
-            props_of_missing.append(p["properties"])
+            missing_providers.append(p["original_feature"])
+
+debug_msg = ''
+if '--debug' in sys.argv:
+    debug_msg = ':\n' + json.dumps({'type': 'FeatureCollection', 'features': missing_providers})
 
 print(
-    f"[filter-geom] Could not match {num_missing} of {len(providers)} providers:",
-    props_of_missing,
+    f"[filter-geom] Could not match {len(missing_providers)} of {len(providers)} providers{debug_msg}",
     file=sys.stderr,
 )
