@@ -6,11 +6,11 @@ import sys
 with open(sys.argv[1]) as f:
     providers = [
         {
-            'point': Point(*g['coordinates']),
+            'point': Point(*feature['geometry']['coordinates']),
             'polygons': [],
             'features': [],
         }
-        for g in json.load(f)['geometries']
+        for feature in json.load(f)['features']
     ]
 
 for line in sys.stdin:

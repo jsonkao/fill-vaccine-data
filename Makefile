@@ -2,18 +2,6 @@ output.txt: census_data/census.json patterns.csv
 	python3 demographics.py > $@
 
 #
-# Deriving GeoJSON geometry from WKT SafeGraph geometry
-#
-
-# Filter SafeGraph geometry to polygons containing providers
-geometry.geojson: VA04-09-2021-13-50-GEOMETRY-2021_03-2021-04-09/geometry.csv wkt.js filter-geom.py providers.geojson
-	node wkt.js $< \
-	| python3 filter-geom.py providers.geojson \
-	| ndjson-reduce \
-	| ndjson-map '{type: "FeatureCollection", features: d}' \
-	| mapshaper - name=geometry -clean -o $@
-
-#
 # Patterns download and filter
 #
 
@@ -26,6 +14,18 @@ decompress:
 	find patterns -name "*.gz" -print0 | parallel -q0 gunzip -k
 
 #
+# Deriving GeoJSON geometry from WKT SafeGraph geometry
+#
+
+# Filter SafeGraph geometry to polygons containing providers
+geometry.geojson: VA04-09-2021-13-50-GEOMETRY-2021_03-2021-04-09/geometry.csv wkt.js filter-geom.py providers.geojson
+	node wkt.js $< \
+	| python3 filter-geom.py providers.geojson \
+	| ndjson-reduce \
+	| ndjson-map '{type: "FeatureCollection", features: d}' \
+	> $@
+
+#
 # Use R to get Census data. Must be run from RStudio for some reason
 #
 
@@ -36,11 +36,12 @@ census_data/census.json:
 # Getting providers from the GISCorps link
 #
 
-providers.geojson: richmond.json
-	jq '.providers[]' -c richmond.json \
-	| ndjson-map '{type: "Point", coordinates: [d.long,d.lat]}' \
+providers.geojson: richmond.json Makefile filter-boundary.py
+	jq '.providers[]' -c $< \
+	| ndjson-map '{type: "Feature", geometry: {type: "Point", coordinates: [d.long,d.lat]}, properties: d}' \
+	| python3 filter-boundary.py \
 	| ndjson-reduce \
-	| ndjson-map '{type: "GeometryCollection", geometries: d}' \
+	| ndjson-map '{type: "FeatureCollection", features: d}' \
 	> $@
 
 providers-old.geojson:
@@ -59,8 +60,12 @@ providers:
 # richmond.json: richmond-points.geojson scrape.py
 # 	python3 scrape.py $< > $@
 
-richmond-points.geojson: richmond.geojson
+richmond-points.geojson: richmond-boundary.geojson
 	mapshaper $< -point-grid interval=.019 -o $@
 
-richmond.geojson:
-	curl -o $@ 'https://data.richmondgov.com/api/geospatial/e9k6-65id?method=export&format=GeoJSON'
+richmond-boundary.geojson: Makefile
+	curl 'https://data.richmondgov.com/api/geospatial/e9k6-65id?method=export&format=GeoJSON' \
+	| mapshaper - \
+	-dissolve \
+	-clean \
+	-o $@
