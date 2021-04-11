@@ -8,3 +8,11 @@
     * Compare proportion SG visits with proportion actual visits (either by institution x race, neighborhood x race, or just race)
     * Maybe run methodology on other cities where ground truth is more available
 6. Ask a stats god whats up
+
+## Instructions
+
+0. If adding new SafeGraph files (by running `make download`), run `make decompress`.
+
+1. Somehow put a list of providers into `richmond.json`. I copy-pasted results from multiple zipcodes in Richmond from the Networks Tab from VaccineFinder.
+
+2. `make output.txt; cat output.txt`
