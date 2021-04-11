@@ -28,7 +28,7 @@ PRIORITY_NAMES = [
     "Publix",
     "YMCA",
     "Kroger",
-    "Walmart Pharmacy",
+    "Pharmacy",
     "Rite Aid",
 ]
 
@@ -51,6 +51,7 @@ for p in providers:
                 f"[filter-geom] No priority names: {[f['properties']['location_name'] for f in p['features']]}",
                 file=sys.stderr,
             )
+            num_missing += 1
 
 print(
     f"[filter-geom] Could not match {num_missing} of {len(providers)} providers.",
