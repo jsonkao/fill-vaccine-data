@@ -6,7 +6,7 @@ output.txt: census_data/census.json patterns.csv
 #
 
 # Filter SafeGraph geometry to polygons containing providers
-geometry.geojson: VA04-09-2021-13-50-GEOMETRY-2021_03-2021-04-09/geometry.csv wkt.js filter-geom.py
+geometry.geojson: VA04-09-2021-13-50-GEOMETRY-2021_03-2021-04-09/geometry.csv wkt.js filter-geom.py providers.geojson
 	node wkt.js $< \
 	| python3 filter-geom.py providers.geojson \
 	| ndjson-reduce \
