@@ -13,7 +13,7 @@ def filter_file(fname):
     with open(fname) as f:
         for line in f:
             if line[:19] in placekeys:
-                output += line[:-1]
+                output += line
     return output
 
 
