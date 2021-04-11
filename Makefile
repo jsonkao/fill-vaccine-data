@@ -36,7 +36,7 @@ census_data/census.json:
 # Getting providers from the GISCorps link
 #
 
-providers.geojson: richmond.json Makefile filter-boundary.py
+providers.geojson: richmond.json filter-boundary.py
 	jq '.providers[]' -c $< \
 	| ndjson-map '{type: "Feature", geometry: {type: "Point", coordinates: [d.long,d.lat]}, properties: d}' \
 	| python3 filter-boundary.py \
