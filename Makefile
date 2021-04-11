@@ -7,7 +7,7 @@ output.txt: census_data/census.json patterns.csv
 
 # Filter SafeGraph patterns to those with placekeys
 patterns.csv: geometry.geojson
-	python3 cut.py geometry.geojson $(wildcard $(basename $@)/*/*/*/*.csv) > $@
+	python3 filter-placekeys.py geometry.geojson $(wildcard $(basename $@)/*/*/*/*.csv) > $@
 
 # Decompress all gz files
 decompress:
