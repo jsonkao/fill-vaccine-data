@@ -1,7 +1,7 @@
 ## Plan
 
 1. Focus scope on Richmond, Virginia.
-2. Scrape VaccineFinder
+2. Scrape VaccineFinder (GISCorps source)
 3. Match sites with SG placekey id's using Geometry dataset
 4. Use Weekly Patterns dataset to find home cbg's of those visiting vaccine sites and find their demographics
 5. Validate results at the lowest level possible

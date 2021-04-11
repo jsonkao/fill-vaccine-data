@@ -3,14 +3,15 @@ import matplotlib.path as mpltPath
 import json
 import sys
 
-with open(sys.argv[1]) as f:
+with open(sys.argv[1]) as f, open(sys.argv[2]) as f2:
     providers = [
         {
             "point": Point(*feature["geometry"]["coordinates"]),
             "polygons": [],
             "features": [],
+            "properties": feature["properties"],
         }
-        for feature in json.load(f)["features"]
+        for feature in json.load(f)["features"] + json.load(f2)['features']
     ]
 
 for line in sys.stdin:
@@ -33,10 +34,12 @@ PRIORITY_NAMES = [
 ]
 
 num_missing = 0
+props_of_missing = []
 
 for p in providers:
     if len(p["polygons"]) == 0:
         num_missing += 1
+        props_of_missing.append(p["properties"])
     elif len(p["polygons"]) == 1:
         print(json.dumps(p["features"][0]))
     else:
@@ -52,8 +55,10 @@ for p in providers:
                 file=sys.stderr,
             )
             num_missing += 1
+            props_of_missing.append(p["properties"])
 
 print(
-    f"[filter-geom] Could not match {num_missing} of {len(providers)} providers.",
+    f"[filter-geom] Could not match {num_missing} of {len(providers)} providers:",
+    props_of_missing,
     file=sys.stderr,
 )

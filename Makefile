@@ -13,18 +13,18 @@ patterns.csv: geometry.geojson
 decompress:
 	find patterns -name "*.gz" -print0 | parallel -q0 gunzip -k
 
-# Download SafeGraph files
+# Download SafeGraph files. Virginia began it's rollout roughly around the beggining of Jan maybe. Just CVS maybe. Idrk
 download:
-	aws s3 sync s3://sg-c19-response/weekly-patterns-delivery-2020-12/weekly/patterns/2021 patterns --profile safegraphws --endpoint https://s3.wasabisys.com
+	aws s3 sync s3://sg-c19-response/weekly-patterns-delivery-2020-12/weekly/patterns/2021 patterns --profile safegraphws --endpoint https://s3.wasabisys.com --include '*' --exclude '01/*'
 
 #
 # Deriving GeoJSON geometry from WKT SafeGraph geometry
 #
 
 # Filter SafeGraph geometry to polygons containing providers
-geometry.geojson: VA04-09-2021-13-50-GEOMETRY-2021_03-2021-04-09/geometry.csv wkt.js filter-geom.py providers.geojson
-	node wkt.js $< \
-	| python3 filter-geom.py providers.geojson \
+geometry.geojson: VA04-09-2021-13-50-GEOMETRY-2021_03-2021-04-09/geometry.csv wkt2geojson.js filter-geom.py providers.geojson
+	node wkt2geojson.js $< \
+	| python3 filter-geom.py providers.geojson giscorps-providers.geojson \
 	| ndjson-reduce \
 	| ndjson-map '{type: "FeatureCollection", features: d}' \
 	> $@
@@ -37,7 +37,7 @@ census-data/census.json:
 	Rscript census-data/get-census-data.R
 
 #
-# Getting providers from the GISCorps link
+# Getting providers
 #
 
 providers.geojson: richmond.json filter-boundary.py
@@ -48,13 +48,13 @@ providers.geojson: richmond.json filter-boundary.py
 	| ndjson-map '{type: "FeatureCollection", features: d}' \
 	> $@
 
-providers-old.geojson:
-	mapshaper providers/*.shp -filter 'municipali.toLowerCase() == "richmond"' -drop fields=* -o $@
+giscorps-providers.geojson: giscorps-providers Makefile
+	mapshaper $</*.shp -filter 'municipali.toLowerCase() == "richmond" && State == "VA"' -o $@
 
-providers:
-	curl -L https://opendata.arcgis.com/datasets/c50a1a352e944a66aed98e61952051ef_0.zip -o providers.zip
-	unzip -d $@ providers.zip
-	rm providers.zip
+giscorps-providers:
+	curl -L https://opendata.arcgis.com/datasets/c50a1a352e944a66aed98e61952051ef_0.zip -o $@.zip
+	unzip -d $@ $@.zip
+	rm $@.zip
 
 #
 # Getting providers by scraping VaccineFinder (doesnt really work)

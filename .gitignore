@@ -1,5 +1,4 @@
 VA04-09-2021-13-50-GEOMETRY-2021_03-2021-04-09
-geometry.geojson
 
 .DS_Store
 
@@ -8,4 +7,4 @@ node_modules
 patterns/
 patterns.csv
 
-providers/*
+giscorps-providers/*
