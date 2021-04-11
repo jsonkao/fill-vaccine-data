@@ -33,8 +33,8 @@ geometry.geojson: VA04-09-2021-13-50-GEOMETRY-2021_03-2021-04-09/geometry.csv wk
 # Use R to get Census data. Must be run from RStudio for some reason
 #
 
-census_data/census.json:
-	Rscript get-census-data.R
+census-data/census.json:
+	Rscript census-data/get-census-data.R
 
 #
 # Getting providers from the GISCorps link
