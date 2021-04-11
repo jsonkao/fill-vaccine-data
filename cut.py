@@ -10,15 +10,10 @@ filenames = sys.argv[2:]
 def filter_file(fname):
      date = "2021-" + "-".join(fname.split("/")[1:-2])
      output = ""
-     # is_first = True
      with open(fname) as f:
-        # if is_first:
-        #     output += next(f)[:-1] + ',"date"\n'
-        #     is_first = False
           for line in f:
                if line[:19] in placekeys:
                     output += line[:-1] + "," + date + "\n"
-        # print("Completed", fname, file=sys.stderr)
      return output
 
 def main():
