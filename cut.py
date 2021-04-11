@@ -1,5 +1,3 @@
-import matplotlib.path as mpltPath
-from shapely.geometry import shape, Point, MultiPoint
 import sys
 import json
 
