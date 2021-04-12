@@ -11,7 +11,7 @@ with open(sys.argv[1]) as f, open(sys.argv[2]) as f2:
             "features": [],
             "original_feature": feature,
         }
-        for feature in json.load(f)["features"] + json.load(f2)['features']
+        for feature in json.load(f)["features"] + json.load(f2)["features"]
     ]
 
 for line in sys.stdin:
@@ -54,9 +54,11 @@ for p in providers:
             )
             missing_providers.append(p["original_feature"])
 
-debug_msg = ''
-if '--debug' in sys.argv:
-    debug_msg = ':\n' + json.dumps({'type': 'FeatureCollection', 'features': missing_providers})
+debug_msg = ""
+if "--debug" in sys.argv:
+    debug_msg = ":\n" + json.dumps(
+        {"type": "FeatureCollection", "features": missing_providers}
+    )
 
 print(
     f"[filter-geom] Could not match {len(missing_providers)} of {len(providers)} providers{debug_msg}",
