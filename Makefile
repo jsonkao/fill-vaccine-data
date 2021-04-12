@@ -1,6 +1,6 @@
 MAKEFLAGS += -j4
 
-output.txt: census_data/census.json patterns.csv
+output.txt: census_data/census.json patterns.csv demographics.py
 	python3 demographics.py > $@
 
 #
