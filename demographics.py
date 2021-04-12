@@ -80,7 +80,7 @@ with open("patterns.csv") as f:
         if later_than(opening_dates[row["location_name"]] or "2021-01-01", end_date):
             continue
 
-        homes = json.loads(row["visitor_home_cbgs"])
+        # Scale down number of visitors by excluding impossible vaccine dwell times
         dwell_times = json.loads(row["bucketed_dwell_times"])
         dwell_time_total = sum(dwell_times.values())
         dwell_factor = (
@@ -89,6 +89,8 @@ with open("patterns.csv") as f:
             - dwell_times["5-10"]
             - dwell_times["11-20"]
         ) / dwell_time_total
+
+        homes = json.loads(row["visitor_home_cbgs"])
         for cbg in homes:
             if cbg.startswith("51"):
                 cbg_counts[end_date][cbg] += (

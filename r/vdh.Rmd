@@ -1,28 +1,66 @@
 ---
-title: "VDH"
+title: "VDH Ground Truth"
 output: html_document
 ---
 
 ```{r setup, include=FALSE}
+library(tidyverse)
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-## R Markdown
+## Read and clean data
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+```{r}
+data <- read.csv("../vdh_open_data/VDH-COVID-19-PublicUseDataset-Vaccines-DosesAdministered_By-Race-Ethnicity.csv") %>% 
+  mutate(date = as.Date(Report.Date, "%m/%d/%Y")) %>% 
+  filter(Locality == "Richmond City") %>% 
+  select(date, status = Vaccination.Status, race.eth = Race.and.Ethnicity, count = People.by.vaccination.status.count)
+data.table::setDT(data)
 
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
-
-```{r cars}
-summary(cars)
+sgData <- read.csv("sg-demographics.csv") %>% 
+  mutate(date = as.Date(date))
+sgData
 ```
 
-## Including Plots
+## Analysis
 
-You can also embed plots, for example:
+```{r}
+plt <- data %>%
+  group_by(date) %>%
+  mutate(total = sum(count)) %>% 
+  group_by(date, race.eth) %>% 
+  summarize(proportion = sum(count), total = mean(total)) %>% 
+  filter(!race.eth %in% c("Other Race", "Two or more races", "Native American")) %>% 
+  mutate(proportion = proportion / total) %>% 
+  ggplot(aes(date, proportion, color = race.eth)) +
+  geom_line(size = 1) +
+  scale_y_continuous(labels = scales::percent) + 
+  labs(subtitle = 'Percentage of those vaccinated by race or ethnicity in Richmond City', color = '') +
+  theme(axis.text = element_text(size = 11), legend.text = element_text(size = 11), axis.title = element_blank(), plot.subtitle = element_text(size = 12.5))
 
-```{r pressure, echo=FALSE}
-plot(pressure)
+ggsave(
+  "richmond.png",
+  plt,
+  width = 7,
+  height = 5.5,
+  units = "in"
+)
+
+data %>%
+  group_by(date, race.eth) %>%
+  summarize(count = sum(count)) %>% 
+  filter(!race.eth %in% c("Other Race", "Two or more races", "Native American")) %>% 
+  ggplot(aes(date, count, color = race.eth)) +
+  geom_line()
+
+sgData %>% 
+  group_by(date) %>%
+  mutate(total = sum(count)) %>% 
+  group_by(date, race.eth) %>% 
+  summarize(proportion = sum(count), total = mean(total)) %>% 
+  mutate(proportion = proportion / total) %>% 
+  ggplot(aes(date, proportion, color = race.eth)) +
+  geom_line()
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+
