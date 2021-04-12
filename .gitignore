@@ -11,4 +11,6 @@ patterns/
 patterns.csv
 
 giscorps-providers/*
+
 .Rproj.user
+.Rhistory

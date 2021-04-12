@@ -4,6 +4,7 @@ from collections import defaultdict
 from datetime import datetime
 import json
 import csv
+import sys
 
 opening_dates = {
     # https://www.wric.com/health/coronavirus/cvs-expanding-virginia-vaccination-locations-from-28-to-36/
@@ -115,19 +116,16 @@ for date in cbg_counts:
 
 # Weekly shares
 
-print("date,race.eth,count,total")
-for date in total_count:
-    for c in categories:
-        print(f"{date},{c},{weighted_sums[date][c]},{total_count[date]}")
-
-import sys
-
-# sys.exit(0)
+if '--csv' in sys.argv:
+    print("date,race.eth,count,total")
+    for date in total_count:
+        for c in categories:
+            print(f"{date},{c},{weighted_sums[date][c]},{total_count[date]}")
+    sys.exit(0)
 
 # Overall shares
 
 total_count = sum(total_count.values())
-print("\n=== TOTAL ===")
 for c in categories:
     weighted_sum = sum(weighted_sums[date][c] for date in weighted_sums)
     print(f"{c}: {weighted_sum / total_count}")

@@ -41,8 +41,8 @@ plt <- data %>%
 ggsave(
   "richmond.png",
   plt,
-  width = 7,
-  height = 5.5,
+  width = 6.5,
+  height = 4.8,
   units = "in"
 )
 
