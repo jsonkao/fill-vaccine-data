@@ -87,3 +87,17 @@ richmond-boundary.geojson: Makefile
 	-dissolve \
 	-clean \
 	-o $@
+
+#
+# Normalization stats
+#
+
+NORM_DIR = normalization_stats
+norm: $(NORM_DIR)/normalization_stats.csv
+
+$(NORM_DIR)/normalization_stats.csv: Makefile
+	find $(NORM_DIR)/*/* -type f | head -n1 | xargs cat | head -n1 > $@
+	find $(NORM_DIR)/*/* -type f | xargs cat | grep ,va, >> $@
+
+$(NORM_DIR):
+	aws s3 sync s3://sg-c19-response/weekly-patterns-delivery-2020-12/weekly/normalization_stats/2021 $(NORM_DIR) --profile safegraphws --endpoint https://s3.wasabisys.com --exclude '*' --include "*.csv"

@@ -3,8 +3,12 @@ VA04-09-2021-13-50-GEOMETRY-2021_03-2021-04-09
 .DS_Store
 
 node_modules
+normalization_stats/*/*
+
+__pycache__
 
 patterns/
 patterns.csv
 
 giscorps-providers/*
+.Rproj.user

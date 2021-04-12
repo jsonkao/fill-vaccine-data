@@ -48,33 +48,74 @@ def later_than(a_str, b_str):
     [a, b] = [datetime.strptime(s, "%Y-%m-%d") for s in [a_str, b_str]]
     return a > b
 
-cbg_counts = defaultdict(int)
+# Load normalization stats
+
+with open("normalization_stats/normalization_stats.csv") as f:
+    # Wait until 1/25/2021
+    while not next(f).startswith('2021,1,24'): pass
+    # Sum visits over 7 day periods
+    visits = {}
+    date = None
+    for i, line in enumerate(f.readlines()):
+        values = line.split(',')
+        if i % 7 == 0:
+            date = '-'.join([f'{int(x):02}' for x in values[:3]])
+            visits[date] = 0
+        visits[date] += int(values[4])
+    # Convert into ratios
+    visits = {d: visits[d] / list(visits.values())[0] for d in visits}
+
+# CBG counts by week
+
+cbg_counts = defaultdict(lambda: defaultdict(int))
 with open("patterns.csv") as f:
     reader = csv.DictReader(f)
     for row in reader:
+        start_date = row["date_range_start"].split("T")[0]
+        end_date = row["date_range_end"].split("T")[0]
         # If opening date later than the end of a data collection period, continue
         if later_than(
                 opening_dates[row["location_name"]] or "2021-01-01",
-            row["date_range_end"].split("T")[0],
+            end_date
         ):
             continue
 
         homes = json.loads(row["visitor_home_cbgs"])
+        dwell_times = json.loads(row["bucketed_dwell_times"])
+        dwell_time_total = sum(dwell_times.values())
+        dwell_factor = (dwell_time_total - dwell_times["<5"] - dwell_times["5-10"] - dwell_times["11-20"]) / dwell_time_total
         for cbg in homes:
             if cbg.startswith("51"):
-                cbg_counts[cbg] += homes[cbg]
+                cbg_counts[end_date][cbg] += homes[cbg] / visits[start_date] * dwell_factor
 
 # Evaluate demographics of different counts of CBGs
 
-total_count = 0
-weighted_sums = defaultdict(int)
+total_count = defaultdict(int)
+weighted_sums = defaultdict(lambda: defaultdict(int))
 categories = ["white", "black", "asian", "hispanic"]
-for cbg in list(cbg_counts.keys()):
-    count = cbg_counts[cbg]
-    total_count += count
-    for c in categories:
-        # Count * proportion
-        weighted_sums[c] += count * (census[cbg][c] / census[cbg]["total_population"])
+for date in cbg_counts:
+    counts = cbg_counts[date]
+    for cbg in counts:
+        count = counts[cbg]
+        total_count[date] += count
+        for c in categories:
+            # Count * proportion
+            weighted_sums[date][c] += count * (census[cbg][c] / census[cbg]["total_population"])
 
-for field in weighted_sums:
-    print(f"{field}: {weighted_sums[field] / total_count}")
+# Weekly shares
+
+print('date,race.eth,count,total')
+for date in total_count:
+    for c in categories:
+        print(f'{date},{c},{weighted_sums[date][c]},{total_count[date]}')
+
+import sys
+# sys.exit(0)
+
+# Overall shares
+
+total_count = sum(total_count.values())
+print('\n=== TOTAL ===')
+for c in categories:
+    weighted_sum = sum(weighted_sums[date][c] for date in weighted_sums)
+    print(f"{c}: {weighted_sum / total_count}")
