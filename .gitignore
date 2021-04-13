@@ -9,8 +9,7 @@ __pycache__
 
 patterns/
 patterns.csv
-
-giscorps-providers/*
+places.geojson
 
 .Rproj.user
 .Rhistory
