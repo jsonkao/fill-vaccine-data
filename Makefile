@@ -34,7 +34,8 @@ MAKEFLAGS = -j4
 # Filter SafeGraph geometry to polygons containing providers
 # Geometry csv file is proprietary; ask Spencer for Richmond City
 places.geojson: VA04-09-2021-13-50-GEOMETRY-2021_03-2021-04-09/geometry.csv filter-geom.py providers/vaccine-finder.geojson
-	node wkt2geojson.js $< \
+	cat $< \
+	| python3 wkt2geojson.py \
 	| python3 filter-geom.py providers/vaccine-finder.geojson providers/giscorps.geojson \
 	| ndjson-reduce \
 	| ndjson-map '{type: "FeatureCollection", features: d}' \
@@ -60,11 +61,13 @@ providers/vaccine-finder.geojson: providers/vaccine-finder.json
 	| mapshaper - -uniq guid -o $@
 
 providers/giscorps.geojson: providers/giscorps
-	mapshaper $</*.shp -filter 'municipali.toLowerCase() == "richmond" && State == "VA"' -o - ndjson \
+	mapshaper $</*.shp -filter 'municipali.toLowerCase() == "richmond" && State == "VA"' -o $<.tmp.geojson ndjson
+	cat $<.tmp.geojson \
 	| python3 filter-boundary.py \
 	| ndjson-reduce \
 	| ndjson-map '{type: "FeatureCollection", features: d}' \
 	> $@
+	rm $<.tmp.geojson
 
 providers/giscorps:
 	curl -L https://opendata.arcgis.com/datasets/c50a1a352e944a66aed98e61952051ef_0.zip -o $@.zip
