@@ -8,7 +8,7 @@ output.txt: census_data/census.json patterns.csv demographics.py
 #
 
 # Filter SafeGraph patterns to those with placekeys
-patterns.csv: geometry.geojson filter-placekeys.py
+patterns.csv: places.geojson filter-placekeys.py
 	python3 filter-placekeys.py $< $(wildcard $(basename $@)/*/*/*/patterns.csv) > $@
 
 
@@ -32,9 +32,10 @@ download:
 MAKEFLAGS = -j4
 
 # Filter SafeGraph geometry to polygons containing providers
-geometry.geojson: VA04-09-2021-13-50-GEOMETRY-2021_03-2021-04-09/geometry.csv filter-geom.py providers.geojson
+# Geometry csv file is proprietary; ask Spencer for Richmond City
+places.geojson: VA04-09-2021-13-50-GEOMETRY-2021_03-2021-04-09/geometry.csv filter-geom.py providers/vaccine-finder.geojson
 	node wkt2geojson.js $< \
-	| python3 filter-geom.py providers.geojson giscorps-providers.geojson \
+	| python3 filter-geom.py providers/vaccine-finder.geojson providers/giscorps.geojson \
 	| ndjson-reduce \
 	| ndjson-map '{type: "FeatureCollection", features: d}' \
 	> $@
@@ -50,7 +51,7 @@ census-data/census.json:
 # Getting providers
 #
 
-providers.geojson: richmond.json filter-boundary.py
+providers/vaccine-finder.geojson: providers/vaccine-finder.json
 	jq '.providers[]' -c $< \
 	| ndjson-map '{type: "Feature", geometry: {type: "Point", coordinates: [d.long,d.lat]}, properties: d}' \
 	| python3 filter-boundary.py \
@@ -58,14 +59,14 @@ providers.geojson: richmond.json filter-boundary.py
 	| ndjson-map '{type: "FeatureCollection", features: d}' \
 	| mapshaper - -uniq guid -o $@
 
-giscorps-providers.geojson: giscorps-providers Makefile
+providers/giscorps.geojson: providers/giscorps
 	mapshaper $</*.shp -filter 'municipali.toLowerCase() == "richmond" && State == "VA"' -o - ndjson \
 	| python3 filter-boundary.py \
 	| ndjson-reduce \
 	| ndjson-map '{type: "FeatureCollection", features: d}' \
 	> $@
 
-giscorps-providers:
+providers/giscorps:
 	curl -L https://opendata.arcgis.com/datasets/c50a1a352e944a66aed98e61952051ef_0.zip -o $@.zip
 	unzip -d $@ $@.zip
 	rm $@.zip
