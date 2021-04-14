@@ -93,6 +93,20 @@ richmond-boundary.geojson: Makefile
 	-o $@
 
 #
+# Vaccine Distribution Allocations by Jurisdiction
+#
+
+# Rows for Pfizer, Moderna, Jannsen
+allocations.csv:
+	( \
+	curl https://data.cdc.gov/api/views/saz5-9hgg/rows.csv?accessType=DOWNLOAD; \
+	curl https://data.cdc.gov/api/views/b7pe-5nws/rows.csv?accessType=DOWNLOAD; \
+	curl https://data.cdc.gov/api/views/w9zu-fywh/rows.csv?accessType=DOWNLOAD \
+	) \
+	| grep '^Virginia' \
+	> $@
+
+#
 # Normalization stats
 #
 

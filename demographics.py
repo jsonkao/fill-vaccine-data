@@ -69,6 +69,22 @@ with open("normalization_stats/normalization_stats.csv") as f:
     # Convert into ratios
     visits = {d: visits[d] / list(visits.values())[0] for d in visits}
 
+# Load allocation data to force visit distribution to look like allocation distribution
+
+with open("allocations.csv") as f:
+    # Sum visits from each provider
+    allocations = defaultdict(int)
+    for line in f:
+        if '2021' not in line or (',01/' in line) or ',04/19' in line or ',04/12' in line:
+            continue
+        values = line.split(',')
+        date = '2021-' + '-'.join(values[1].split('/')[:-1])
+        alloc = sum(int(v) for v in values[2:])
+        allocations[date] += alloc
+    # Convert into ratios
+    total = sum(allocations.values())
+    alloc_weights = {d: allocations[d] / total for d in allocations}
+
 # CBG counts by week
 
 cbg_counts = defaultdict(lambda: defaultdict(int))
@@ -103,10 +119,18 @@ with open("patterns.csv") as f:
 total_count = defaultdict(int)
 weighted_sums = defaultdict(lambda: defaultdict(int))
 categories = ["white", "black", "asian", "hispanic"]
+
+total_cbg_counts = sum(
+    sum(cbg_counts[date].values())
+    for date in cbg_counts
+)
+
 for date in cbg_counts:
     counts = cbg_counts[date]
+    date_total = sum(counts.values())
+    alloc_factor = alloc_weights[date] * total_cbg_counts / date_total
     for cbg in counts:
-        count = counts[cbg]
+        count = counts[cbg] * alloc_factor
         total_count[date] += count
         for c in categories:
             # Count * proportion
